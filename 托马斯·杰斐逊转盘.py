@@ -1,0 +1,35 @@
+# 转轮密码
+as1 = [
+"ZWAXJGDLUBVIQHKYPNTCRMOSFE",
+"KPBELNACZDTRXMJQOYHGVSFUWI",
+"BDMAIZVRNSJUWFHTEQGYXPLOCK",
+"RPLNDVHGFCUKTEBSXQYIZMJWAO",
+"IHFRLABEUOTSGJVDKCPMNZQWXY",
+"AMKGHIWPNYCJBFZDRUSLOQXVET",
+"GWTHSPYBXIZULVKMRAFDCEONJQ",
+"NOZUTWDCVRJLXKISEFAPMYGHBQ",
+"QWATDSRFHENYVUBMCOIKZGJXPL",
+"WABMCXPLTDSRJQZGOIKFHENYVU",
+"XPLTDAOIKFZGHENYSRUBMCQWVJ",
+"TDSWAYXPLVUBOIKZGJRFHENMCQ",
+"BMCSRFHLTDENQWAOXPYVUIKZGJ",
+"XPHKZGJTDSENYVUBMLAOIRFCQW",
+]
+word = "HCBTSXWCRQGLES"
+key =[2,5,1,3,6,4,9,7,8,14,10,13,11,12]
+as2 = [''] * len(key)
+as3 = [''] * 26
+
+for i,j in enumerate(key):
+    as2[i] = as1[j-1]
+    print(as2[i])
+
+for index,value in enumerate(as2):
+    as2[index] = value[value.find(word[index]):] + value[:value.find(word[index])]
+
+
+for i in range(len(as3)):
+    for x, y in enumerate(as2):
+        as3[i] += y[i]
+print(as3)
+
