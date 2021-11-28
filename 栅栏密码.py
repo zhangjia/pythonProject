@@ -67,7 +67,7 @@ def decode(string, key):  # 解密字符串以及解密栏数
        return destr
    except:
        print(key,"不正确")
-s = 'SUNYHAGU'
+s = 'XZSDMFLZ'
 for i in range(len(s)):
     res = decode(s, i)
     # res = encode(s, i)

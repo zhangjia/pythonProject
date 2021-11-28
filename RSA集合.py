@@ -8,20 +8,25 @@ import random
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
+
 def modinv(a, n):
     return primefac.modinv(a, n) % n
+
 
 # 知道p和q，求N
 def getN(p, q):
     return p * q
 
+
 # 知道m，e，n,求C
 def getC(m, e, n):
     return pow(m, e, n)
 
+
 # 知道c,d,n，求M
 def getM(c, d, n):
     return pow(c, d, n)
+
 
 # 知道c、p、q、dq、dp，求M
 def getMByDQDP(dp, dq, p, q, c):
@@ -31,9 +36,11 @@ def getMByDQDP(dp, dq, p, q, c):
     m = (((mp - mq) * InvQ) % p) * q + mq
     return libnum.n2s(int(m)).decode()
 
+
 # 知道m1, m2, p, q，求M，m1和m2需要先调用getM1OrMP计算
 def getMBYM1M2(m1, m2, p, q):
     return ((m1 - m2) * modinv(p, q) % p) * q + m2
+
 
 # 知道n，c,npp，求M
 def getMByNPP(n, c, npp):
@@ -71,6 +78,7 @@ def getStr(num):
 def getP(n1, n2):
     return primefac.gcd(n1, n2)
 
+
 # 知道p，q，求NPP
 def getNPP(p, q):
     return (p + 2) * (q + 2)
@@ -82,6 +90,7 @@ def getDP(d, p):
 
 def getDQ(d, q):
     return d % (q - 1)
+
 
 # 当e特别小的时候，用这个
 def samllE(c, n):
@@ -102,6 +111,7 @@ def gcd(a, b):
         b = temp
     return a
 
+
 # 当知道ned，求p和q
 def getpq(n, e, d):
     p = 1
@@ -117,8 +127,9 @@ def getpq(n, e, d):
                 q = n // p
     return p, q
 
+
 # 知道dp，e，n，求P和Q
-def getPQByDP(dp, e, n):
+def getPAndQByDP(dp, e, n):
     temp = dp * e
     for i in range(1, e):
         if (temp - 1) % i == 0:
@@ -126,6 +137,7 @@ def getPQByDP(dp, e, n):
             y = n % x
             if y == 0:
                 return x, n // x
+
 
 def get10ToStr(x):
     return long_to_bytes(x)
@@ -158,6 +170,7 @@ def same_n_sttack(n, e1, e2, c1, c2):
     m = (pow(c1, s1, n) * pow(c2, s2, n)) % n
     return m
 
+
 # 有key或者pem后缀的文件，求E和N
 def getEAndNByPem(ad):
     with open(ad, "rb") as f:
@@ -168,7 +181,7 @@ def getEAndNByPem(ad):
 def createPrivatePem(e, p, q, ad):
     rsa_components = (p * q, e, getD(e, p, q), p, q)
     keypair = RSA.construct(rsa_components)
-    with open(ad + 'private.pem', 'wb') as f:
+    with open(ad, 'wb') as f:
         f.write(keypair.exportKey())
         return keypair.exportKey()
 
@@ -180,34 +193,72 @@ def createPrivatePem(e, p, q, ad):
 #         with open(ad2, "rb") as f2:
 #             msg = pk.decrypt(f2.read(),0)
 #             print(msg)
-# 知道e，p，q,私钥，求明文
+# 知道e，p，q,密闻，求私钥D，明文
 def getFlagByEnc(e, p, q, ad1):
     private_key = RSA.importKey(RSA.construct((p * q, e, getD(e, p, q), p, q)).exportKey())
     pk = PKCS1_v1_5.new(private_key)
     with open(ad1, "rb") as f2:
-        msg = pk.decrypt(f2.read(), 0)
+        msg = pk.decrypt(f2.read(), 0) #对秘文解密
         print(msg)
-def getMByCArray(c,e,p,q):
+
+
+def getMByCArray(c, e, p, q):
     res = ""
     for i in c:
         res += long_to_bytes(getM(i, getD(e, p, q), p * q)).decode('unicode_escape')
     return res
 
+
 # 知道p + q ,知道（p + 1）（q+1）,知道e，d，c
-def getMByPAddQANDPAadd1QAdd1(pAq,pA1qA1,c,d):
-    return long_to_bytes(getM(c,d,pA1qA1-1-pAq))
+def getMByPAddQANDPAadd1QAdd1(pAq, pA1qA1, c, d):
+    return long_to_bytes(getM(c, d, pA1qA1 - 1 - pAq))
 
 
+n,e ={920139713,19}
+c = [
+704796792,
+752211152,
+274704164,
+18414022,
+368270835,
+483295235,
+263072905,
+459788476,
+483295235,
+459788476,
+663551792,
+475206804,
+459788476,
+428313374,
+475206804,
+459788476,
+425392137,
+704796792,
+458265677,
+341524652,
+483295235,
+534149509,
+425392137,
+428313374,
+425392137,
+341524652,
+458265677,
+263072905,
+483295235,
+828509797,
+341524652,
+425392137,
+475206804,
+428313374,
+483295235,
+475206804,
+459788476,
+306220148
+]
+p = 49891
+q = 18443
 
-
-
-
-
-
-
-
-
-
+print(getMByCArray(c,e,p,q))
 
 '''1. 知道n，用yafu分解出：p和q2. 知道p，q，相乘得出：n
 3. 知道e，p，q，通过欧几里得算法得出：d 

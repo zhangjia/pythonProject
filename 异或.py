@@ -16,6 +16,6 @@ def getResByDoc(key,word):
     return res
 
 
-ad1 = 'F:\\Google\\CTF\\b8c1caee-43d6-42ee-aecc-d72502a5ade2\\1.txt'
-ad2 = 'F:\\Google\\CTF\\b8c1caee-43d6-42ee-aecc-d72502a5ade2\\2.txt'
+ad1 = '/Users/zhangjia/Desktop/1/key.txt'
+ad2 = '/Users/zhangjia/Desktop/1/word.txt'
 print(getResByDoc(ad1,ad2))
