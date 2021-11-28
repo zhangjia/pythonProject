@@ -8,36 +8,34 @@ import random
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
-
-# 求D
 def modinv(a, n):
     return primefac.modinv(a, n) % n
 
-
+# 知道p和q，求N
 def getN(p, q):
     return p * q
 
-
+# 知道m，e，n,求C
 def getC(m, e, n):
     return pow(m, e, n)
 
-
+# 知道c,d,n，求M
 def getM(c, d, n):
     return pow(c, d, n)
 
-
-def getM(dp, dq, p, q, c):
+# 知道c、p、q、dq、dp，求M
+def getMByDQDP(dp, dq, p, q, c):
     InvQ = gmpy2.invert(q, p)
     mp = pow(c, dp, p)
     mq = pow(c, dq, q)
     m = (((mp - mq) * InvQ) % p) * q + mq
     return libnum.n2s(int(m)).decode()
 
-
-def getM(m1, m2, p, q):
+# 知道m1, m2, p, q，求M，m1和m2需要先调用getM1OrMP计算
+def getMBYM1M2(m1, m2, p, q):
     return ((m1 - m2) * modinv(p, q) % p) * q + m2
 
-
+# 知道n，c,npp，求M
 def getMByNPP(n, c, npp):
     x1 = gmpy2.mpz(1)
     x2 = gmpy2.mpz(-((npp - n - 4) // 2))
@@ -73,7 +71,7 @@ def getStr(num):
 def getP(n1, n2):
     return primefac.gcd(n1, n2)
 
-
+# 知道p，q，求NPP
 def getNPP(p, q):
     return (p + 2) * (q + 2)
 
@@ -85,7 +83,7 @@ def getDP(d, p):
 def getDQ(d, q):
     return d % (q - 1)
 
-
+# 当e特别小的时候，用这个
 def samllE(c, n):
     i = 0
     while 1:
@@ -104,7 +102,7 @@ def gcd(a, b):
         b = temp
     return a
 
-
+# 当知道ned，求p和q
 def getpq(n, e, d):
     p = 1
     q = 1
@@ -119,6 +117,15 @@ def getpq(n, e, d):
                 q = n // p
     return p, q
 
+# 知道dp，e，n，求P和Q
+def getPQByDP(dp, e, n):
+    temp = dp * e
+    for i in range(1, e):
+        if (temp - 1) % i == 0:
+            x = (temp - 1) // i + 1
+            y = n % x
+            if y == 0:
+                return x, n // x
 
 def get10ToStr(x):
     return long_to_bytes(x)
@@ -151,7 +158,7 @@ def same_n_sttack(n, e1, e2, c1, c2):
     m = (pow(c1, s1, n) * pow(c2, s2, n)) % n
     return m
 
-
+# 有key或者pem后缀的文件，求E和N
 def getEAndNByPem(ad):
     with open(ad, "rb") as f:
         key = RSA.import_key(f.read())
@@ -173,30 +180,43 @@ def createPrivatePem(e, p, q, ad):
 #         with open(ad2, "rb") as f2:
 #             msg = pk.decrypt(f2.read(),0)
 #             print(msg)
+# 知道e，p，q,私钥，求明文
 def getFlagByEnc(e, p, q, ad1):
     private_key = RSA.importKey(RSA.construct((p * q, e, getD(e, p, q), p, q)).exportKey())
     pk = PKCS1_v1_5.new(private_key)
     with open(ad1, "rb") as f2:
         msg = pk.decrypt(f2.read(), 0)
         print(msg)
+def getMByCArray(c,e,p,q):
+    res = ""
+    for i in c:
+        res += long_to_bytes(getM(i, getD(e, p, q), p * q)).decode('unicode_escape')
+    return res
 
-p = 8637633767257008567099653486541091171320491509433615447539162437911244175885667806398411790524083553445158113502227745206205327690939504032994699902053229
-q = 12640674973996472769176047937170883420927050821480010581593137135372473880595613737337630629752577346147039284030082593490776630572584959954205336880228469
-dp = 6500795702216834621109042351193261530650043841056252930930949663358625016881832840728066026150264693076109354874099841380454881716097778307268116910582929
-dq = 783472263673553449019532580386470672380574033551303889137911760438881683674556098098256795673512201963002175438762767516968043599582527539160811120550041
-c = 24722305403887382073567316467649080662631552905960229399079107995602154418176056335800638887527614164073530437657085079676157350205351945222989351316076486573599576041978339872265925062764318536089007310270278526159678937431903862892400747915525118983959970607934142974736675784325993445942031372107342103852
-get
+# 知道p + q ,知道（p + 1）（q+1）,知道e，d，c
+def getMByPAddQANDPAadd1QAdd1(pAq,pA1qA1,c,d):
+    return long_to_bytes(getM(c,d,pA1qA1-1-pAq))
 
-'''
-1. 知道n，用yafu分解出：p和q
-2. 知道p，q，相乘得出：n
+
+
+
+
+
+
+
+
+
+
+
+
+'''1. 知道n，用yafu分解出：p和q2. 知道p，q，相乘得出：n
 3. 知道e，p，q，通过欧几里得算法得出：d 
 4. 知道c，d，n，通过pow方法算出：m
 5. 知道m，e，n，通过pow可以得出: c        
 6. 多组加密，e为65537，n很大，可以采用公约数模数分解 
 7. 知道e是3，密文前面的的问候语众所周知，或者p和q知道了一部分，或者知道一部分明文: https://cocalc.com/projects?session=1635902259454
 8. 果e很大，远远超过65537，那么基本就可以确定是Wiener :Durfee Attack.py
-9. 有两组及以上的RSA加密过程，而且其中两次的m和n都是相同的（或者说是已知1个n，但是有多个c、e对），那么Cat可以通过计算直接计算出m :共模攻击      
+9. 有两组及以上的RSA加密过程，而且其中两次的m和n都是相同的（或者说是已知1个n，但是有多个c、e对），那么same_n_sttack方法可以通过计算直接计算出m :共模攻击      
 10. 多次选择的加密指数较低（这里可以取3也可以取其他较小的素数），而且这几次加密过程，加密的信息都是相同的 : 广播攻击      
 11. 当使用同一公钥对两个具有某种线性关系的消息M1和M2进行加密，并将加密后的消息C1、C2发送时，我们就可以获得对应的消息M1与M2：消息攻击
 12. 使用相同的k，即r也相同，如果知道两个不同的消息利用相同的r，就可以进行攻击了
