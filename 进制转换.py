@@ -10,5 +10,6 @@ def hesStr_to_asi(str):
 
 #16进制转字符串
 if __name__ == "__main__":
-	hex_str = '61666374667B317327745F73305F333435797D'
+
+	hex_str = '65626d61726168'
 	print(hexStr_to_str(hex_str))
